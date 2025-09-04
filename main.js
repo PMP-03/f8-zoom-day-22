@@ -6,13 +6,7 @@ const modalClose = $(".modal-close");
 const btnCancel = $(".btn-cancel");
 const addTaskModal = $("#addTaskModal");
 const todoAppForm = $(".todo-app-form");
-const taskGrid = $(".task-grid");
-const addTaskCard = $(".task-card");
 
-console.log(taskGrid)
-
-
-// const isCompleted = $("#taskTitle");
 const todoTasks = [];
 
 
@@ -32,15 +26,15 @@ btnCancel.onclick = closeModal;
 
 todoAppForm.onsubmit = function(event){
     event.preventDefault();
-
+    // lay toan bo du lieu trong form
     const newTask = Object.fromEntries(new FormData(todoAppForm));
     newTask.isCompleted == false;
 
     todoTasks.unshift(newTask);
-
-    // todoAppForm.reset()
-    // addTaskModal.className = "modal-overlay"
-    renderTasks(todoTasks)
+    // reset form
+    todoAppForm.reset();
+    closeModal();
+    renderTasks(todoTasks);
 }
 
 function renderTasks(tasks){
@@ -72,5 +66,6 @@ function renderTasks(tasks){
             </div>
         `
     }).join("")
-    taskGrid.innerHTML = html;
+    const todoList = $("#todoList");
+    todoList.innerHTML = html;
 }
