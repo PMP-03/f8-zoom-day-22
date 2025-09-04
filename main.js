@@ -1,0 +1,76 @@
+const $ = document.querySelector.bind(document);
+const $$ = document.querySelectorAll.bind(document);
+
+const openModal = $(".add-btn");
+const modalClose = $(".modal-close");
+const btnCancel = $(".btn-cancel");
+const addTaskModal = $("#addTaskModal");
+const todoAppForm = $(".todo-app-form");
+const taskGrid = $(".task-grid");
+const addTaskCard = $(".task-card");
+
+console.log(taskGrid)
+
+
+// const isCompleted = $("#taskTitle");
+const todoTasks = [];
+
+
+openModal.onclick = function(event){
+    addTaskModal.className = "modal-overlay show";
+    setTimeout(() => {
+        const todoInput = $(".form-input");
+        todoInput.focus();
+    }, 100);
+}
+function closeModal (event){
+    addTaskModal.className = "modal-overlay"
+}
+modalClose.onclick = closeModal;
+btnCancel.onclick = closeModal;
+
+
+todoAppForm.onsubmit = function(event){
+    event.preventDefault();
+
+    const newTask = Object.fromEntries(new FormData(todoAppForm));
+    newTask.isCompleted == false;
+
+    todoTasks.unshift(newTask);
+
+    // todoAppForm.reset()
+    // addTaskModal.className = "modal-overlay"
+    renderTasks(todoTasks)
+}
+
+function renderTasks(tasks){
+    const html = todoTasks.map( task => {
+        return `
+        <div class="task-card ${task.color} ${task.isCompleted ? 'completed' : ''}">
+                <div class="task-header">
+                    <h3 class="task-title">${task.title}</h3>
+                    <button class="task-menu">
+                        <i class="fa-solid fa-ellipsis fa-icon"></i>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item">
+                                <i class="fa-solid fa-pen-to-square fa-icon"></i>
+                                Edit
+                            </div>
+                            <div class="dropdown-item complete">
+                                <i class="fa-solid fa-check fa-icon"></i>
+                                ${task.isCompleted ? 'Mark as Active' : 'Mark as Completed'}
+                            </div>
+                            <div class="dropdown-item delete">
+                                <i class="fa-solid fa-trash fa-icon"></i>
+                                Delete
+                            </div>
+                        </div>
+                    </button>
+                </div>
+                <p class="task-description">${task.description}</p>
+                <div class="task-time">${task.start_Time} - ${task.end_Time}</div>
+            </div>
+        `
+    }).join("")
+    taskGrid.innerHTML = html;
+}
