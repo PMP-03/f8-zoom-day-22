@@ -7,8 +7,7 @@ const btnCancel = $(".btn-cancel");
 const addTaskModal = $("#addTaskModal");
 const todoAppForm = $(".todo-app-form");
 
-const todoTasks = [];
-
+const todoTasks = JSON.parse(localStorage.getItem("todo Tasks")) ?? [];
 
 openModal.onclick = function(event){
     addTaskModal.className = "modal-overlay show";
@@ -30,7 +29,10 @@ todoAppForm.onsubmit = function(event){
     const newTask = Object.fromEntries(new FormData(todoAppForm));
     newTask.isCompleted == false;
 
+    // them todo tasks
     todoTasks.unshift(newTask);
+    // luu todo task vao localStorage
+    localStorage.setItem('todo Tasks', JSON.stringify(todoTasks))
     // reset form
     todoAppForm.reset();
     closeModal();
@@ -38,6 +40,11 @@ todoAppForm.onsubmit = function(event){
 }
 
 function renderTasks(tasks){
+    const todoList = $("#todoList");
+    if(!tasks.length){
+        todoList.innerHTML = `<p>Chua co cong viec nao</p>`;
+        return;
+    }
     const html = todoTasks.map( task => {
         return `
         <div class="task-card ${task.color} ${task.isCompleted ? 'completed' : ''}">
@@ -66,6 +73,8 @@ function renderTasks(tasks){
             </div>
         `
     }).join("")
-    const todoList = $("#todoList");
+    
     todoList.innerHTML = html;
 }
+
+renderTasks(todoTasks);
