@@ -8,13 +8,74 @@ const addTaskModal = $("#addTaskModal");
 const todoAppForm = $(".todo-app-form");
 const todoList = $("#todoList");
 const searchInput = $(".search-input");
+const tabList = $(".tab-list");
 const btnPrimary = addTaskModal.querySelector(".btn-primary") ;
 const formTitle = addTaskModal.querySelector(".modal-title") ;
 let editIndex = null;
 
-// onchange
+tabList.onclick = function(event){
+    const allTasks = event.target.closest('.all-tasks');
+    const activeTasks = event.target.closest('.active-tasks');
+    const completeTask = event.target.closest('.completed-btn');
+
+    const btnTabs = tabList.querySelectorAll('.tab-button');
+    // Xoa class active
+    btnTabs.forEach( tab => {
+        tab.classList.remove("active");
+    })
+
+    if(allTasks){
+        allTasks.classList.add("active");
+        renderTasks(todoTasks);
+    }
+    if(activeTasks){
+        activeTasks.classList.add("active");
+        const activeTasksFilter = todoTasks.filter( task => {
+            return !task.isCompleted;
+        })
+        renderTasks(activeTasksFilter);
+    }
+    if(completeTask){
+        completeTask.classList.add("active");
+        const completeTaskFilter = todoTasks.filter( task => {
+            return task.isCompleted;
+        })
+        renderTasks(completeTaskFilter);
+    }
+
+    return;
+}
+
+// loại bỏ dấu ở chữ
+function removeVietnameseTones(str) {
+    return str
+        .normalize("NFD")                       // tách dấu ra khỏi ký tự gốc
+        .replace(/[\u0300-\u036f]/g, "")       // xóa các dấu
+        .replace(/đ/g, "d").replace(/Đ/g, "D") // thay đ -> d
+        .toLowerCase();
+}
+
+// searchInput
 searchInput.oninput = function (event){
-    console.log(event.target.value.trim())
+    const searchValue = removeVietnameseTones(event.target.value.trim());
+
+    if (!searchValue) {
+        renderTasks(todoTasks); 
+        return;
+    }
+
+    const filteredTasks = todoTasks.filter( task => {
+        const title = removeVietnameseTones(task.title);
+        const description = removeVietnameseTones(task.description);
+
+        return (title.includes(searchValue) || description.includes(searchValue));
+    });
+
+    if(filteredTasks.length === 0){
+        todoList.innerHTML = `<p>Khong tim thay cong viec nao</p>`;
+        return;
+    }
+    renderTasks(filteredTasks)
 }
 
 const todoTasks = JSON.parse(localStorage.getItem("todo Tasks")) ?? [];
@@ -64,7 +125,6 @@ todoList.onclick = (event) => {
         const task = todoTasks[tasksIndex];
 
         editIndex = tasksIndex;
-        console.log(editIndex)
         // lap key value
         for(const key in task){
             const value = task[key];
@@ -79,12 +139,10 @@ todoList.onclick = (event) => {
             formTitle.textContent = "Edit Tasks"
         }
 
-        // const btnPrimary = addTaskModal.querySelector(".btn-primary") ;
         if(btnPrimary){
             btnPrimary.dataset.original = btnPrimary.textContent;
             btnPrimary.textContent = "Save Tasks"
         }
-        // console.log(formTitle)
         openFormModal();
     }
     if(deleteBtn){
@@ -126,7 +184,7 @@ todoAppForm.onsubmit = function(event){
     // reset form
     todoAppForm.reset();
     closeForm();
-    renderTasks();
+    renderTasks(todoTasks);
 }
 
 function saveTodoTasks (){
@@ -134,13 +192,13 @@ function saveTodoTasks (){
     localStorage.setItem('todo Tasks', JSON.stringify(todoTasks));
 }
 
-function renderTasks(){
+function renderTasks(tasks){
     // kiem tra tasks co ton tai khong
-    if(!todoTasks.length){
+    if(!tasks.length){
         todoList.innerHTML = `<p>Chua co cong viec nao</p>`;
         return;
     }
-    const html = todoTasks.map( (task, index) => {
+    const html = tasks.map( (task, index) => {
         return `
         <div class="task-card ${task.color} ${task.isCompleted ? 'completed' : ''}">
                 <div class="task-header">
@@ -172,7 +230,7 @@ function renderTasks(){
     todoList.innerHTML = html;
 }
 
-renderTasks();
+renderTasks(todoTasks);
 
 // const editBtns = $$(".edit-btn");
 // console.log(editBtns);
