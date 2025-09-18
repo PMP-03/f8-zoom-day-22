@@ -13,6 +13,8 @@ const btnPrimary = addTaskModal.querySelector(".btn-primary") ;
 const formTitle = addTaskModal.querySelector(".modal-title") ;
 let editIndex = null;
 
+const todoTasks = JSON.parse(localStorage.getItem("TodoTasks")) ?? [];
+
 tabList.onclick = function(event){
     const allTasks = event.target.closest('.all-tasks');
     const activeTasks = event.target.closest('.active-tasks');
@@ -72,13 +74,11 @@ searchInput.oninput = function (event){
     });
 
     if(filteredTasks.length === 0){
-        todoList.innerHTML = `<p>Khong tim thay cong viec nao</p>`;
+        todoList.innerHTML = `<p>Không tìm thấy công việc nào.</p>`;
         return;
-    }
-    renderTasks(filteredTasks)
-}
-
-const todoTasks = JSON.parse(localStorage.getItem("todo Tasks")) ?? [];
+    };
+    renderTasks(filteredTasks);
+};
 
 function openFormModal (){
     addTaskModal.className = "modal-overlay show";
@@ -91,24 +91,27 @@ openModal.onclick = openFormModal;
 function closeForm (){
     addTaskModal.className = "modal-overlay";
 
-    const formTitle = addTaskModal.querySelector(".modal-title") ;
         if(formTitle){
-            formTitle.textContent = formTitle.dataset.original || formTitle.textContent;
-            delete formTitle.dataset.original;
+            setTimeout(() => {
+                formTitle.textContent = formTitle.dataset.original || formTitle.textContent;
+                delete formTitle.dataset.original;
+            }, 500);
         }
     
         if(btnPrimary){
-            btnPrimary.textContent = btnPrimary.dataset.original || formTitle.textContent;
+            setTimeout(() => {
+                 btnPrimary.textContent = btnPrimary.dataset.original || formTitle.textContent;
             delete  btnPrimary.dataset.original;
+            }, 500);
         }
         // Xoa bo editIndex
         editIndex = null;
 
         setTimeout(() => {
             addTaskModal.querySelector(".modal").scrollTop = 0;
-        }, 1000);
-        // reset form ve mac dinh
-        // todoAppForm.reset();
+            // reset form ve mac dinh  
+            todoAppForm.reset();
+        }, 500);
 }
 modalClose.onclick = closeForm;
 btnCancel.onclick = closeForm;
@@ -170,7 +173,7 @@ todoAppForm.onsubmit = function(event){
     event.preventDefault();
     // lay toan bo du lieu trong form
     const formData = Object.fromEntries(new FormData(todoAppForm));
-    formData.isCompleted == false;
+    formData.isCompleted = false;
 
     // neu co editIndex thuc hien logic sua
     if(editIndex){
@@ -189,20 +192,20 @@ todoAppForm.onsubmit = function(event){
 
 function saveTodoTasks (){
     // luu todo task vao localStorage
-    localStorage.setItem('todo Tasks', JSON.stringify(todoTasks));
+    localStorage.setItem('TodoTasks', JSON.stringify(todoTasks));
 }
 
 function renderTasks(tasks){
     // kiem tra tasks co ton tai khong
     if(!tasks.length){
-        todoList.innerHTML = `<p>Chua co cong viec nao</p>`;
+        todoList.innerHTML = `<p>Chưa có công việc nào.</p>`;
         return;
     }
     const html = tasks.map( (task, index) => {
         return `
-        <div class="task-card ${task.color} ${task.isCompleted ? 'completed' : ''}">
+        <div class="task-card ${escapeHTML(task.color)} ${task.isCompleted ? 'completed' : ''}">
                 <div class="task-header">
-                    <h3 class="task-title">${task.title}</h3>
+                    <h3 class="task-title">${escapeHTML(task.title)}</h3>
                     <button class="task-menu">
                         <i class="fa-solid fa-ellipsis fa-icon"></i>
                         <div class="dropdown-menu">
@@ -221,8 +224,8 @@ function renderTasks(tasks){
                         </div>
                     </button>
                 </div>
-                <p class="task-description">${task.description}</p>
-                <div class="task-time">${task.start_Time} - ${task.end_Time}</div>
+                <p class="task-description">${escapeHTML(task.description)}</p>
+                <div class="task-time">${escapeHTML(task.start_Time)} - ${escapeHTML(task.end_Time)}</div>
             </div>
         `
     }).join("")
@@ -232,7 +235,8 @@ function renderTasks(tasks){
 
 renderTasks(todoTasks);
 
-// const editBtns = $$(".edit-btn");
-// console.log(editBtns);
-
-
+function escapeHTML(html){
+    const div = document.createElement("div");
+    div.textContent = html;
+    return div.innerHTML;
+}
